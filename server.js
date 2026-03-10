@@ -86,7 +86,7 @@ io.on("connection", (socket) => {
       .get(memberId);
     if (!member) return;
 
-    db.prepare("INSERT INTO refills (member_id, amount) VALUES (?, 30)").run(memberId);
+    db.prepare("INSERT INTO refills (member_id, amount, created_at) VALUES (?, 30, datetime('now','+5 hours','+30 minutes'))").run(memberId);
     io.emit("dashboard", getDashboard()); // broadcast to ALL clients
   });
 
