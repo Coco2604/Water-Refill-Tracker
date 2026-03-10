@@ -22,7 +22,7 @@ db.exec(`
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     member_id INTEGER NOT NULL,
     amount REAL NOT NULL DEFAULT 30,
-    created_at TEXT NOT NULL DEFAULT (datetime('now','localtime')),
+    created_at TEXT NOT NULL DEFAULT (datetime('now','+5 hours','+30 minutes')),
     FOREIGN KEY (member_id) REFERENCES members(id)
   );
 `);
