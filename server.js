@@ -27,6 +27,9 @@ db.exec(`
   );
 `);
 
+// Fix any old records that still have amount=31
+db.prepare("UPDATE refills SET amount = 30 WHERE amount = 31").run();
+
 // Seed default members if table is empty
 const count = db.prepare("SELECT COUNT(*) as c FROM members").get().c;
 if (count === 0) {
@@ -83,7 +86,7 @@ io.on("connection", (socket) => {
       .get(memberId);
     if (!member) return;
 
-    db.prepare("INSERT INTO refills (member_id) VALUES (?)").run(memberId);
+    db.prepare("INSERT INTO refills (member_id, amount) VALUES (?, 30)").run(memberId);
     io.emit("dashboard", getDashboard()); // broadcast to ALL clients
   });
 
