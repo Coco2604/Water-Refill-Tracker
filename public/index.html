@@ -1,0 +1,932 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Bottle Refills 🌸</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet" />
+    <style>
+      :root {
+        --bg: #fdf2f8;
+        --bg2: #fce7f3;
+        --card: #ffffff;
+        --pink: #ec4899;
+        --pink-light: #f9a8d4;
+        --purple: #a855f7;
+        --purple-light: #d8b4fe;
+        --lavender: #818cf8;
+        --lavender-light: #c7d2fe;
+        --peach: #fb923c;
+        --green: #34d399;
+        --red: #f87171;
+        --text: #4a1942;
+        --text-light: #831843;
+        --muted: #9f7aea;
+        --border: #f3d1e7;
+        --shadow: rgba(236, 72, 153, 0.12);
+      }
+
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: "Nunito", "Segoe UI", system-ui, sans-serif;
+        background: var(--bg);
+        background-image:
+          radial-gradient(circle at 20% 50%, rgba(168, 85, 247, 0.06) 0%, transparent 50%),
+          radial-gradient(circle at 80% 20%, rgba(236, 72, 153, 0.06) 0%, transparent 50%),
+          radial-gradient(circle at 40% 80%, rgba(129, 140, 248, 0.06) 0%, transparent 50%);
+        color: var(--text);
+        min-height: 100vh;
+        padding: 16px;
+        padding-bottom: 100px;
+      }
+
+      /* Floating decorative elements */
+      body::before {
+        content: "🌸 ✨ 💜 🫧 🌷 ✨ 🌸 💧";
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        padding: 6px;
+        text-align: center;
+        font-size: 0.7rem;
+        letter-spacing: 8px;
+        opacity: 0.5;
+        pointer-events: none;
+        z-index: 0;
+      }
+
+      .header {
+        text-align: center;
+        padding: 28px 0 8px;
+        position: relative;
+      }
+
+      .header h1 {
+        font-size: 1.8rem;
+        font-weight: 800;
+        background: linear-gradient(135deg, var(--pink), var(--purple), var(--lavender));
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        letter-spacing: -0.5px;
+      }
+
+      .header p {
+        color: var(--muted);
+        font-size: 0.85rem;
+        margin-top: 4px;
+        font-weight: 600;
+      }
+
+      .connection-status {
+        text-align: center;
+        font-size: 0.75rem;
+        color: var(--muted);
+        margin-bottom: 14px;
+        font-weight: 600;
+      }
+
+      .status-dot {
+        display: inline-block;
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        margin-right: 5px;
+        background: var(--red);
+        transition: background 0.3s;
+      }
+
+      .status-dot.connected {
+        background: var(--green);
+        box-shadow: 0 0 8px rgba(52, 211, 153, 0.5);
+      }
+
+      /* Summary cards */
+      .summary-bar {
+        display: flex;
+        gap: 12px;
+        justify-content: center;
+        margin: 12px 0 24px;
+        flex-wrap: wrap;
+      }
+
+      .summary-item {
+        background: var(--card);
+        border: 2px solid var(--border);
+        border-radius: 20px;
+        padding: 14px 22px;
+        text-align: center;
+        min-width: 130px;
+        box-shadow: 0 4px 15px var(--shadow);
+        position: relative;
+        overflow: hidden;
+      }
+
+      .summary-item::before {
+        content: "";
+        position: absolute;
+        top: 0; left: 0; right: 0;
+        height: 3px;
+        background: linear-gradient(90deg, var(--pink), var(--purple), var(--lavender));
+      }
+
+      .summary-item .label {
+        font-size: 0.7rem;
+        color: var(--muted);
+        text-transform: uppercase;
+        letter-spacing: 0.8px;
+        font-weight: 700;
+      }
+
+      .summary-item .value {
+        font-size: 1.5rem;
+        font-weight: 800;
+        background: linear-gradient(135deg, var(--pink), var(--purple));
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        margin-top: 2px;
+      }
+
+      /* Pie chart section */
+      .chart-section {
+        max-width: 900px;
+        margin: 0 auto 24px;
+        display: flex;
+        justify-content: center;
+      }
+
+      .chart-wrapper {
+        background: var(--card);
+        border: 2px solid var(--border);
+        border-radius: 24px;
+        padding: 24px;
+        box-shadow: 0 4px 20px var(--shadow);
+        display: flex;
+        align-items: center;
+        gap: 24px;
+        flex-wrap: wrap;
+        justify-content: center;
+      }
+
+      .pie-container {
+        position: relative;
+        width: 140px;
+        height: 140px;
+      }
+
+      .pie-container svg {
+        transform: rotate(-90deg);
+        width: 140px;
+        height: 140px;
+      }
+
+      .pie-center {
+        position: absolute;
+        top: 50%; left: 50%;
+        transform: translate(-50%, -50%);
+        text-align: center;
+      }
+
+      .pie-center .pie-total {
+        font-size: 1.1rem;
+        font-weight: 800;
+        color: var(--text);
+      }
+
+      .pie-center .pie-label {
+        font-size: 0.6rem;
+        color: var(--muted);
+        font-weight: 700;
+        text-transform: uppercase;
+      }
+
+      .chart-legend {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+      }
+
+      .legend-item {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        font-size: 0.85rem;
+        font-weight: 600;
+      }
+
+      .legend-dot {
+        width: 12px;
+        height: 12px;
+        border-radius: 50%;
+        flex-shrink: 0;
+      }
+
+      .legend-name {
+        min-width: 80px;
+      }
+
+      .legend-bar-bg {
+        width: 80px;
+        height: 8px;
+        border-radius: 4px;
+        background: var(--bg2);
+        overflow: hidden;
+      }
+
+      .legend-bar-fill {
+        height: 100%;
+        border-radius: 4px;
+        transition: width 0.5s ease;
+      }
+
+      .legend-pct {
+        font-size: 0.75rem;
+        color: var(--muted);
+        min-width: 35px;
+        text-align: right;
+      }
+
+      /* Member cards */
+      .cards {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+        gap: 16px;
+        max-width: 900px;
+        margin: 0 auto;
+      }
+
+      .member-card {
+        background: var(--card);
+        border: 2px solid var(--border);
+        border-radius: 24px;
+        padding: 22px;
+        transition: transform 0.2s, box-shadow 0.2s;
+        box-shadow: 0 4px 15px var(--shadow);
+        position: relative;
+        overflow: hidden;
+      }
+
+      .member-card::before {
+        content: "";
+        position: absolute;
+        top: 0; left: 0; right: 0;
+        height: 4px;
+      }
+
+      .member-card:nth-child(1)::before { background: linear-gradient(90deg, #ec4899, #f9a8d4); }
+      .member-card:nth-child(2)::before { background: linear-gradient(90deg, #a855f7, #d8b4fe); }
+      .member-card:nth-child(3)::before { background: linear-gradient(90deg, #818cf8, #c7d2fe); }
+
+      .member-card:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 12px 30px var(--shadow);
+      }
+
+      .member-card .top-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 18px;
+      }
+
+      .member-avatar {
+        font-size: 1.5rem;
+        margin-right: 8px;
+      }
+
+      .member-name {
+        font-size: 1.1rem;
+        font-weight: 700;
+        cursor: pointer;
+        padding: 4px 8px;
+        border-radius: 10px;
+        border: 2px solid transparent;
+        transition: border-color 0.2s, background 0.2s;
+        color: var(--text);
+      }
+
+      .member-name:hover {
+        border-color: var(--pink-light);
+        background: var(--bg2);
+      }
+
+      .member-badge {
+        font-size: 0.7rem;
+        padding: 5px 12px;
+        border-radius: 20px;
+        font-weight: 700;
+      }
+
+      .stats-row {
+        display: flex;
+        justify-content: space-around;
+        margin-bottom: 18px;
+        background: var(--bg);
+        border-radius: 16px;
+        padding: 14px;
+      }
+
+      .stat {
+        text-align: center;
+      }
+
+      .stat .num {
+        font-size: 1.7rem;
+        font-weight: 800;
+      }
+
+      .stat .lbl {
+        font-size: 0.65rem;
+        color: var(--muted);
+        text-transform: uppercase;
+        font-weight: 700;
+        letter-spacing: 0.5px;
+      }
+
+      .btn-row {
+        display: flex;
+        gap: 8px;
+      }
+
+      .btn-paid {
+        flex: 1;
+        padding: 13px;
+        border: none;
+        border-radius: 16px;
+        font-size: 0.95rem;
+        font-weight: 700;
+        cursor: pointer;
+        transition: all 0.2s;
+        font-family: inherit;
+        color: white;
+        letter-spacing: 0.3px;
+      }
+
+      .member-card:nth-child(1) .btn-paid { background: linear-gradient(135deg, #ec4899, #f472b6); }
+      .member-card:nth-child(2) .btn-paid { background: linear-gradient(135deg, #a855f7, #c084fc); }
+      .member-card:nth-child(3) .btn-paid { background: linear-gradient(135deg, #818cf8, #a5b4fc); }
+
+      .btn-paid:hover {
+        opacity: 0.9;
+        transform: scale(1.02);
+        box-shadow: 0 4px 15px rgba(236, 72, 153, 0.3);
+      }
+
+      .btn-paid:active {
+        transform: scale(0.97);
+      }
+
+      .btn-undo {
+        padding: 13px 16px;
+        border: 2px solid var(--border);
+        border-radius: 16px;
+        background: var(--bg);
+        color: var(--muted);
+        cursor: pointer;
+        font-size: 0.85rem;
+        transition: all 0.2s;
+        font-family: inherit;
+      }
+
+      .btn-undo:hover {
+        border-color: var(--red);
+        color: var(--red);
+        background: #fef2f2;
+      }
+
+      /* History */
+      .history-section {
+        max-width: 900px;
+        margin: 28px auto 0;
+      }
+
+      .history-section h2 {
+        font-size: 1.1rem;
+        font-weight: 700;
+        margin-bottom: 12px;
+        color: var(--muted);
+      }
+
+      .history-list {
+        background: var(--card);
+        border: 2px solid var(--border);
+        border-radius: 20px;
+        overflow: hidden;
+        box-shadow: 0 4px 15px var(--shadow);
+      }
+
+      .history-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 14px 20px;
+        border-bottom: 1px solid var(--border);
+        font-size: 0.88rem;
+        transition: background 0.15s;
+      }
+
+      .history-item:hover {
+        background: var(--bg);
+      }
+
+      .history-item:last-child {
+        border-bottom: none;
+      }
+
+      .history-item .who {
+        font-weight: 700;
+        color: var(--text);
+      }
+
+      .history-item .when {
+        color: var(--muted);
+        font-size: 0.78rem;
+        font-weight: 600;
+      }
+
+      .history-item .amt {
+        background: linear-gradient(135deg, var(--pink), var(--purple));
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        font-weight: 800;
+        font-size: 0.95rem;
+      }
+
+      .history-emoji {
+        margin-right: 8px;
+        font-size: 1rem;
+      }
+
+      .empty-history {
+        text-align: center;
+        padding: 35px;
+        color: var(--muted);
+        font-size: 0.9rem;
+        font-weight: 600;
+      }
+
+      /* Rename input */
+      .rename-input {
+        background: var(--bg);
+        border: 2px solid var(--pink);
+        border-radius: 10px;
+        padding: 4px 8px;
+        color: var(--text);
+        font-size: 1.1rem;
+        font-weight: 700;
+        font-family: inherit;
+        width: 150px;
+        outline: none;
+      }
+
+      /* Toast */
+      .toast {
+        position: fixed;
+        bottom: 30px;
+        left: 50%;
+        transform: translateX(-50%) translateY(100px);
+        background: linear-gradient(135deg, var(--pink), var(--purple));
+        color: white;
+        padding: 14px 28px;
+        border-radius: 20px;
+        font-weight: 700;
+        font-size: 0.9rem;
+        opacity: 0;
+        transition: all 0.3s ease;
+        z-index: 100;
+        box-shadow: 0 8px 25px rgba(236, 72, 153, 0.3);
+        font-family: inherit;
+      }
+
+      .toast.show {
+        transform: translateX(-50%) translateY(0);
+        opacity: 1;
+      }
+
+      /* Confetti canvas */
+      #confetti-canvas {
+        position: fixed;
+        top: 0; left: 0;
+        width: 100%;
+        height: 100%;
+        pointer-events: none;
+        z-index: 200;
+      }
+
+      /* Responsive */
+      @media (max-width: 600px) {
+        body {
+          padding: 10px;
+          padding-bottom: 80px;
+        }
+
+        .header h1 {
+          font-size: 1.4rem;
+        }
+
+        .cards {
+          grid-template-columns: 1fr;
+        }
+
+        .summary-item {
+          min-width: 100px;
+          padding: 12px 16px;
+        }
+
+        .chart-wrapper {
+          padding: 18px;
+          gap: 16px;
+        }
+
+        .pie-container {
+          width: 110px;
+          height: 110px;
+        }
+
+        .pie-container svg {
+          width: 110px;
+          height: 110px;
+        }
+      }
+
+      /* Animations */
+      @keyframes pulse {
+        0% { box-shadow: 0 0 0 0 rgba(236, 72, 153, 0.4); }
+        70% { box-shadow: 0 0 0 15px rgba(236, 72, 153, 0); }
+        100% { box-shadow: 0 0 0 0 rgba(236, 72, 153, 0); }
+      }
+
+      .pulse { animation: pulse 0.6s ease-out; }
+
+      @keyframes fadeInUp {
+        from { opacity: 0; transform: translateY(15px); }
+        to { opacity: 1; transform: translateY(0); }
+      }
+
+      .member-card { animation: fadeInUp 0.4s ease-out backwards; }
+      .member-card:nth-child(1) { animation-delay: 0.05s; }
+      .member-card:nth-child(2) { animation-delay: 0.15s; }
+      .member-card:nth-child(3) { animation-delay: 0.25s; }
+
+      @keyframes float {
+        0%, 100% { transform: translateY(0); }
+        50% { transform: translateY(-6px); }
+      }
+    </style>
+  </head>
+  <body>
+    <canvas id="confetti-canvas"></canvas>
+
+    <div class="header">
+      <h1>🌸 Bottle Refills 💧</h1>
+      <p>₹30 per refill · Real-time tracker</p>
+    </div>
+
+    <div class="connection-status">
+      <span class="status-dot" id="statusDot"></span>
+      <span id="statusText">Connecting...</span>
+    </div>
+
+    <div class="summary-bar">
+      <div class="summary-item">
+        <div class="label">Total Refills</div>
+        <div class="value" id="totalRefills">0</div>
+      </div>
+      <div class="summary-item">
+        <div class="label">Total Spent</div>
+        <div class="value" id="grandTotal">₹0</div>
+      </div>
+    </div>
+
+    <div class="chart-section">
+      <div class="chart-wrapper">
+        <div class="pie-container">
+          <svg viewBox="0 0 120 120" id="pieChart">
+            <circle cx="60" cy="60" r="50" fill="none" stroke="#fce7f3" stroke-width="20" />
+          </svg>
+          <div class="pie-center">
+            <div class="pie-total" id="pieTotal">0</div>
+            <div class="pie-label">refills</div>
+          </div>
+        </div>
+        <div class="chart-legend" id="chartLegend"></div>
+      </div>
+    </div>
+
+    <div class="cards" id="cardsContainer"></div>
+
+    <div class="history-section">
+      <h2>✨ Recent History</h2>
+      <div class="history-list" id="historyList">
+        <div class="empty-history">No refills yet. Tap "I Paid" to record one! 🌷</div>
+      </div>
+    </div>
+
+    <div class="toast" id="toast"></div>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+      const socket = io();
+
+      const statusDot = document.getElementById("statusDot");
+      const statusText = document.getElementById("statusText");
+      const cardsContainer = document.getElementById("cardsContainer");
+      const historyList = document.getElementById("historyList");
+      const totalRefillsEl = document.getElementById("totalRefills");
+      const grandTotalEl = document.getElementById("grandTotal");
+      const toastEl = document.getElementById("toast");
+      const pieChart = document.getElementById("pieChart");
+      const pieTotal = document.getElementById("pieTotal");
+      const chartLegend = document.getElementById("chartLegend");
+
+      let currentData = null;
+
+      const memberColors = ["#ec4899", "#a855f7", "#818cf8"];
+      const memberAvatars = ["🦋", "🌷", "✨"];
+      const memberEmojis = ["💖", "💜", "💙"];
+
+      // Connection status
+      socket.on("connect", () => {
+        statusDot.classList.add("connected");
+        statusText.textContent = "Live ✨";
+      });
+
+      socket.on("disconnect", () => {
+        statusDot.classList.remove("connected");
+        statusText.textContent = "Reconnecting...";
+      });
+
+      // Receive dashboard data
+      socket.on("dashboard", (data) => {
+        currentData = data;
+        renderDashboard(data);
+      });
+
+      function renderDashboard(data) {
+        // Summary
+        totalRefillsEl.textContent = data.totalRefills;
+        grandTotalEl.textContent = "₹" + data.grandTotal;
+        pieTotal.textContent = data.totalRefills;
+
+        // --- Pie chart ---
+        renderPieChart(data.members, data.totalRefills);
+
+        // --- Legend ---
+        chartLegend.innerHTML = data.members.map((m, i) => {
+          const pct = getSharePercent(m.count, data.totalRefills);
+          return `
+            <div class="legend-item">
+              <span class="legend-dot" style="background:${memberColors[i % 3]}"></span>
+              <span class="legend-name">${escapeHtml(m.name)}</span>
+              <div class="legend-bar-bg">
+                <div class="legend-bar-fill" style="width:${pct}%;background:${memberColors[i % 3]}"></div>
+              </div>
+              <span class="legend-pct">${pct}%</span>
+            </div>
+          `;
+        }).join("");
+
+        // Member cards
+        cardsContainer.innerHTML = data.members
+          .map(
+            (m, i) => `
+          <div class="member-card" id="card-${m.id}">
+            <div class="top-row">
+              <div style="display:flex;align-items:center">
+                <span class="member-avatar">${memberAvatars[i % 3]}</span>
+                <span class="member-name" onclick="startRename(${m.id}, this)" title="Click to rename">${escapeHtml(m.name)}</span>
+              </div>
+              <span class="member-badge" style="color:${memberColors[i % 3]}; background:${memberColors[i % 3]}18">
+                ${getSharePercent(m.total, data.grandTotal)}% share
+              </span>
+            </div>
+            <div class="stats-row">
+              <div class="stat">
+                <div class="num" style="color:${memberColors[i % 3]}">${m.count}</div>
+                <div class="lbl">Refills</div>
+              </div>
+              <div class="stat">
+                <div class="num" style="color:${memberColors[i % 3]}">₹${m.total}</div>
+                <div class="lbl">Spent</div>
+              </div>
+            </div>
+            <div class="btn-row">
+              <button class="btn-paid" onclick="addRefill(${m.id}, '${escapeHtml(m.name)}', ${i})">💧 I Paid ₹30</button>
+              <button class="btn-undo" onclick="undoLast(${m.id})" title="Undo last">↩</button>
+            </div>
+          </div>
+        `
+          )
+          .join("");
+
+        // History
+        if (data.history.length === 0) {
+          historyList.innerHTML =
+            '<div class="empty-history">No refills yet. Tap "I Paid" to record one! 🌷</div>';
+        } else {
+          historyList.innerHTML = data.history
+            .map((h) => {
+              const mi = data.members.findIndex((m) => m.name === h.name);
+              const emoji = memberEmojis[mi >= 0 ? mi % 3 : 0];
+              return `
+                <div class="history-item">
+                  <div>
+                    <span class="history-emoji">${emoji}</span>
+                    <span class="who">${escapeHtml(h.name)}</span>
+                    <span class="when">· ${formatDate(h.created_at)}</span>
+                  </div>
+                  <span class="amt">₹${h.amount}</span>
+                </div>
+              `;
+            })
+            .join("");
+        }
+      }
+
+      function renderPieChart(members, total) {
+        if (total === 0) {
+          pieChart.innerHTML = '<circle cx="60" cy="60" r="50" fill="none" stroke="#fce7f3" stroke-width="20" />';
+          return;
+        }
+
+        const circumference = 2 * Math.PI * 50; // ~314.16
+        let offset = 0;
+        let paths = "";
+
+        members.forEach((m, i) => {
+          const pct = m.count / total;
+          const len = pct * circumference;
+          if (len > 0) {
+            paths += `<circle cx="60" cy="60" r="50" fill="none"
+              stroke="${memberColors[i % 3]}"
+              stroke-width="20"
+              stroke-dasharray="${len} ${circumference - len}"
+              stroke-dashoffset="${-offset}"
+              style="transition: all 0.5s ease"
+            />`;
+          }
+          offset += len;
+        });
+
+        if (!paths) {
+          paths = '<circle cx="60" cy="60" r="50" fill="none" stroke="#fce7f3" stroke-width="20" />';
+        }
+
+        pieChart.innerHTML = paths;
+      }
+
+      function addRefill(memberId, name, index) {
+        socket.emit("add-refill", { memberId });
+        showToast(`✅ Recorded ₹30 for ${name} 🌸`);
+        launchConfetti(memberColors[index % 3]);
+
+        const card = document.getElementById("card-" + memberId);
+        if (card) {
+          card.classList.add("pulse");
+          setTimeout(() => card.classList.remove("pulse"), 600);
+        }
+      }
+
+      function undoLast(memberId) {
+        if (confirm("Undo the last refill for this person?")) {
+          socket.emit("undo-last", { memberId });
+          showToast("↩ Last refill undone");
+        }
+      }
+
+      function startRename(memberId, el) {
+        const current = el.textContent;
+        const input = document.createElement("input");
+        input.type = "text";
+        input.className = "rename-input";
+        input.value = current;
+        input.maxLength = 30;
+        el.replaceWith(input);
+        input.focus();
+        input.select();
+
+        function save() {
+          const newName = input.value.trim();
+          if (newName && newName !== current) {
+            socket.emit("rename-member", { memberId, name: newName });
+            showToast(`Renamed to ${newName} ✨`);
+          } else {
+            if (currentData) renderDashboard(currentData);
+          }
+        }
+
+        input.addEventListener("blur", save);
+        input.addEventListener("keydown", (e) => {
+          if (e.key === "Enter") input.blur();
+          if (e.key === "Escape") {
+            input.value = current;
+            input.blur();
+          }
+        });
+      }
+
+      function showToast(msg) {
+        toastEl.textContent = msg;
+        toastEl.classList.add("show");
+        setTimeout(() => toastEl.classList.remove("show"), 2500);
+      }
+
+      function getSharePercent(amount, total) {
+        if (total === 0) return 0;
+        return Math.round((amount / total) * 100);
+      }
+
+      function formatDate(dateStr) {
+        const d = new Date(dateStr);
+        return d.toLocaleDateString("en-IN", {
+          day: "numeric",
+          month: "short",
+          year: "numeric",
+          hour: "2-digit",
+          minute: "2-digit",
+          hour12: true,
+        });
+      }
+
+      function escapeHtml(str) {
+        const div = document.createElement("div");
+        div.textContent = str;
+        return div.innerHTML;
+      }
+
+      // --- Confetti ---
+      const confettiCanvas = document.getElementById("confetti-canvas");
+      const ctx = confettiCanvas.getContext("2d");
+      let confettiPieces = [];
+      let confettiRunning = false;
+
+      function resizeCanvas() {
+        confettiCanvas.width = window.innerWidth;
+        confettiCanvas.height = window.innerHeight;
+      }
+      window.addEventListener("resize", resizeCanvas);
+      resizeCanvas();
+
+      function launchConfetti(color) {
+        const colors = [color, "#f9a8d4", "#d8b4fe", "#fde68a", "#a5f3fc", "#c7d2fe"];
+        for (let i = 0; i < 50; i++) {
+          confettiPieces.push({
+            x: Math.random() * confettiCanvas.width,
+            y: -10,
+            w: Math.random() * 8 + 4,
+            h: Math.random() * 6 + 3,
+            color: colors[Math.floor(Math.random() * colors.length)],
+            vx: (Math.random() - 0.5) * 4,
+            vy: Math.random() * 3 + 2,
+            rotation: Math.random() * 360,
+            rotSpeed: (Math.random() - 0.5) * 10,
+            life: 1,
+          });
+        }
+        if (!confettiRunning) {
+          confettiRunning = true;
+          animateConfetti();
+        }
+      }
+
+      function animateConfetti() {
+        ctx.clearRect(0, 0, confettiCanvas.width, confettiCanvas.height);
+
+        confettiPieces.forEach((p) => {
+          p.x += p.vx;
+          p.y += p.vy;
+          p.vy += 0.05;
+          p.rotation += p.rotSpeed;
+          p.life -= 0.008;
+
+          ctx.save();
+          ctx.translate(p.x, p.y);
+          ctx.rotate((p.rotation * Math.PI) / 180);
+          ctx.globalAlpha = Math.max(p.life, 0);
+          ctx.fillStyle = p.color;
+          ctx.fillRect(-p.w / 2, -p.h / 2, p.w, p.h);
+          ctx.restore();
+        });
+
+        confettiPieces = confettiPieces.filter((p) => p.life > 0);
+
+        if (confettiPieces.length > 0) {
+          requestAnimationFrame(animateConfetti);
+        } else {
+          confettiRunning = false;
+          ctx.clearRect(0, 0, confettiCanvas.width, confettiCanvas.height);
+        }
+      }
+    </script>
+  </body>
+</html>
