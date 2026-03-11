@@ -3,14 +3,22 @@ const http = require("http");
 const { Server } = require("socket.io");
 const Database = require("better-sqlite3");
 const path = require("path");
+const fs = require("fs");
 
 const app = express();
 const server = http.createServer(app);
 const io = new Server(server);
 
 // --- Database setup ---
-const db = new Database(path.join(__dirname, "refills.db"));
+// Store DB outside OneDrive so cloud sync doesn't overwrite/corrupt it
+const dbDir = path.join(process.env.LOCALAPPDATA || require("os").tmpdir(), "BottleRefills");
+if (!fs.existsSync(dbDir)) fs.mkdirSync(dbDir, { recursive: true });
+const dbPath = path.join(dbDir, "refills.db");
+console.log("Database location:", dbPath);
+
+const db = new Database(dbPath);
 db.pragma("journal_mode = WAL");
+db.pragma("wal_checkpoint(TRUNCATE)");
 
 db.exec(`
   CREATE TABLE IF NOT EXISTS members (
@@ -87,6 +95,7 @@ io.on("connection", (socket) => {
     if (!member) return;
 
     db.prepare("INSERT INTO refills (member_id, amount, created_at) VALUES (?, 30, datetime('now','+5 hours','+30 minutes'))").run(memberId);
+    db.pragma("wal_checkpoint(TRUNCATE)");
     io.emit("dashboard", getDashboard()); // broadcast to ALL clients
   });
 
@@ -102,6 +111,7 @@ io.on("connection", (socket) => {
       .get(memberId);
     if (last) {
       db.prepare("DELETE FROM refills WHERE id = ?").run(last.id);
+      db.pragma("wal_checkpoint(TRUNCATE)");
       io.emit("dashboard", getDashboard());
     }
   });
@@ -116,9 +126,21 @@ io.on("connection", (socket) => {
       newName,
       memberId
     );
+    db.pragma("wal_checkpoint(TRUNCATE)");
     io.emit("dashboard", getDashboard());
   });
 });
+
+// --- Graceful shutdown ---
+function shutdown() {
+  try {
+    db.pragma("wal_checkpoint(TRUNCATE)");
+    db.close();
+  } catch (_) {}
+  process.exit(0);
+}
+process.on("SIGINT", shutdown);
+process.on("SIGTERM", shutdown);
 
 // --- Start server ---
 const PORT = process.env.PORT || 3000;
