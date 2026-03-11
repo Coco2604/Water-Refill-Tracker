@@ -10,8 +10,11 @@ const server = http.createServer(app);
 const io = new Server(server);
 
 // --- Database setup ---
-// Store DB outside OneDrive so cloud sync doesn't overwrite/corrupt it
-const dbDir = path.join(process.env.LOCALAPPDATA || require("os").tmpdir(), "BottleRefills");
+// On Windows: store outside OneDrive to prevent cloud sync corruption
+// On hosted/Linux: store in ./data/ within the project
+const dbDir = process.env.LOCALAPPDATA
+  ? path.join(process.env.LOCALAPPDATA, "BottleRefills")
+  : path.join(__dirname, "data");
 if (!fs.existsSync(dbDir)) fs.mkdirSync(dbDir, { recursive: true });
 const dbPath = path.join(dbDir, "refills.db");
 console.log("Database location:", dbPath);
